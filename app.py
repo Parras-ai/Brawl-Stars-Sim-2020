@@ -4,7 +4,7 @@ import time
 import requests
 
 # ==========================================
-# 1. CONEXIÓN A FIREBASE ☁️
+# 1. CONFIGURACIÓN TU FIREBASE (CONECTADO ✅)
 # ==========================================
 FIREBASE_URL = "https://brawlsim-b5ed8-default-rtdb.europe-west1.firebasedatabase.app"
 
@@ -25,34 +25,39 @@ def save_player_data():
             "gems": st.session_state.gems,
             "my_brawlers": st.session_state.my_brawlers
         }
-        try:
-            requests.put(url, json=data)
+        try: requests.put(url, json=data)
         except: pass
 
 # ==========================================
-# 2. INICIALIZACIÓN SEGURA
-# ==========================================
-if 'phase' not in st.session_state: st.session_state.phase = 'idle'
-if 'items' not in st.session_state: st.session_state.items = 0
-if 'reward' not in st.session_state: st.session_state.reward = False
-if 'last_match' not in st.session_state: st.session_state.last_match = None
-
-# ==========================================
-# 3. DATOS DE LOS BRAWLERS (EMOJIS SEGUROS)
+# 2. DATOS CON LOS PINS DE TU IMAGEN
 # ==========================================
 BRAWLERS = {
-    "Shelly": {"emoji": "🔫"},
-    "Nita": {"emoji": "🐻"},
-    "Colt": {"emoji": "🤠"},
-    "Leon": {"emoji": "🦎"},
-    "Mortis": {"emoji": "🦇"},
-    "Crow": {"emoji": "🐦"}
+    "Shelly": {"img": "https://cdn.brawlify.com/pins/Shelly.png"},
+    "Nita": {"img": "https://cdn.brawlify.com/pins/Nita.png"},
+    "Colt": {"img": "https://cdn.brawlify.com/pins/Colt.png"},
+    "Leon": {"img": "https://cdn.brawlify.com/pins/Leon.png"},
+    "Mortis": {"img": "https://cdn.brawlify.com/pins/Mortis.png"},
+    "Crow": {"img": "https://cdn.brawlify.com/pins/Crow.png"},
+    "Spike": {"img": "https://cdn.brawlify.com/pins/Spike.png"},
+    "Poco": {"img": "https://cdn.brawlify.com/pins/Poco.png"},
+    "El Primo": {"img": "https://cdn.brawlify.com/pins/El-Primo.png"}
 }
 
+MODOS = {
+    "💎 ATRAPAGEMAS": {"type": "3vs3", "cups": 8, "mult": 1.0},
+    "⚽ BALÓN BRAWL": {"type": "3vs3", "cups": 10, "mult": 1.2},
+    "🌵 SUPERVIVENCIA": {"type": "showdown", "cups": 12, "mult": 1.5}
+}
+
+BOT_NAMES = ["LeonPro", "ShellyKiller", "NoobMaster69", "BrawlStar_Fan", "PocoLoco", "BullCharge", "SuperCell_Boss"]
+
+if 'phase' not in st.session_state: st.session_state.phase = 'idle'
+if 'selected_brawler' not in st.session_state: st.session_state.selected_brawler = "Shelly"
+
 # ==========================================
-# 4. DISEÑO Y ESTILOS
+# 3. ESTILO NEO-RETRO MEJORADO
 # ==========================================
-st.set_page_config(page_title="Brawl Sim Global", layout="wide")
+st.set_page_config(page_title="Brawl Sim Pins Edition", layout="wide")
 
 st.markdown("""
     <style>
@@ -62,192 +67,192 @@ st.markdown("""
         font-family: 'Lilita One', cursive !important; 
         text-transform: uppercase; 
     }
-    .emoji-safe {
-        font-family: "Apple Color Emoji", "Segoe UI Emoji", Arial, sans-serif !important;
-        font-size: 80px;
-        text-align: center;
-        margin-bottom: -10px;
-    }
-    .emoji-giant {
-        font-family: "Apple Color Emoji", "Segoe UI Emoji", Arial, sans-serif !important;
-        font-size: 150px;
-        text-align: center;
-    }
-    .stApp { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; }
-    .stat-card { background-color: rgba(0,0,0,0.6); padding: 15px; border-radius: 15px; border: 3px solid white; text-align: center; font-size: 24px; }
-    .stButton>button { background-color: #f1c40f; color: black; border: 4px solid black; font-size: 22px; width: 100%; box-shadow: 0 5px #9e7e00; }
+    .stApp { background: #0a0a20; color: white; }
     
-    /* Colores para la pantalla de victoria/derrota */
-    .win-text { color: #2ecc71; text-shadow: 0 0 20px #2ecc71; font-size: 80px; text-align: center; margin-top: -20px;}
-    .lose-text { color: #e74c3c; text-shadow: 0 0 20px #e74c3c; font-size: 80px; text-align: center; margin-top: -20px;}
+    /* HUD Superior */
+    .hud-bar {
+        display: flex;
+        justify-content: space-around;
+        background: rgba(0,0,0,0.8);
+        padding: 15px;
+        border-bottom: 3px solid #f1c40f;
+        margin-bottom: 20px;
+    }
+    .hud-val { font-size: 22px; color: #f1c40f; }
+
+    /* Botones de Navegación Gigantes */
+    .nav-btn>button {
+        height: 120px !important;
+        font-size: 35px !important;
+        border-radius: 25px !important;
+        border: 5px solid black !important;
+        box-shadow: 0 8px #000;
+    }
+    .btn-tienda>button { background: linear-gradient(180deg, #3498db, #2980b9) !important; color: white !important; }
+    .btn-batalla>button { background: linear-gradient(180deg, #e74c3c, #c0392b) !important; color: white !important; }
+
+    /* Cartas de Brawlers */
+    .pin-card {
+        background: rgba(255,255,255,0.1);
+        border-radius: 15px;
+        padding: 15px;
+        text-align: center;
+        border: 2px solid rgba(255,255,255,0.2);
+        margin-bottom: 10px;
+    }
+    .pin-img { width: 90px; filter: drop-shadow(0 0 8px rgba(255,255,255,0.5)); }
+    .vs-txt { font-size: 70px; color: #f1c40f; text-align: center; margin-top: 80px; text-shadow: 0 0 20px #f1c40f; }
     </style>
     """, unsafe_allow_html=True)
 
 # ==========================================
-# 5. PANTALLA DE LOGIN
+# 4. LÓGICA DE PANTALLAS
 # ==========================================
+
+# --- LOGIN ---
 if 'player_name' not in st.session_state:
-    st.markdown("<h1 style='text-align:center; font-size: 70px;'>🌍 BRAWL SIM GLOBAL</h1>", unsafe_allow_html=True)
-    st.markdown("<h3 style='text-align:center;'>ESTADO DEL SERVIDOR: EN LÍNEA ✅</h3>", unsafe_allow_html=True)
-    
-    col1, col2, col3 = st.columns([1,2,1])
-    with col2:
-        name = st.text_input("", placeholder="NOMBRE DE USUARIO...", max_chars=12)
-        if st.button("¡ENTRAR AL SERVIDOR! 🚀"):
-            if name.strip():
-                clean_name = name.strip().upper()
-                st.session_state.player_name = clean_name
-                
-                with st.spinner("Sincronizando con la nube..."):
-                    user_data = load_user_data(clean_name)
-                    
-                if user_data:
-                    st.session_state.coins = user_data["coins"]
-                    st.session_state.gems = user_data["gems"]
-                    st.session_state.my_brawlers = user_data["my_brawlers"]
-                else:
-                    st.session_state.coins = 200
-                    st.session_state.gems = 20
-                    st.session_state.my_brawlers = {"Shelly": 0}
-                    save_player_data()
-                
-                st.session_state.phase = 'idle'
-                time.sleep(0.5)
-                st.rerun()
+    st.markdown("<h1 style='text-align:center; font-size: 80px;'>BRAWL PINS</h1>", unsafe_allow_html=True)
+    name = st.text_input("TU NOMBRE:", placeholder="USUARIO...")
+    if st.button("ENTRAR AL SERVIDOR"):
+        if name.strip():
+            st.session_state.player_name = name.strip().upper()
+            data = load_user_data(st.session_state.player_name)
+            if data: st.session_state.update(data)
             else:
-                st.error("¡ESCRIBE UN NOMBRE!")
+                st.session_state.update({"coins": 500, "gems": 50, "my_brawlers": {"Shelly": 0}})
+                save_player_data()
+            st.rerun()
+    st.stop()
+
+# --- PANTALLA DE BATALLA (SELECCIÓN) ---
+if st.session_state.phase == 'battle_select':
+    st.markdown("<h1 style='text-align:center;'>MODOS DE JUEGO</h1>", unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("<div class='pin-card'><h3>1. BRAWLER</h3></div>", unsafe_allow_html=True)
+        b_sel = st.selectbox("", list(st.session_state.my_brawlers.keys()))
+        st.session_state.selected_brawler = b_sel
+        st.markdown(f"<div style='text-align:center;'><img src='{BRAWLERS[b_sel]['img']}' style='width:160px;'></div>", unsafe_allow_html=True)
+    with col2:
+        st.markdown("<div class='pin-card'><h3>2. EVENTO</h3></div>", unsafe_allow_html=True)
+        m_sel = st.selectbox("", list(MODOS.keys()))
+        st.markdown(f"<div class='pin-card'><h2>{m_sel}</h2><p style='font-size:20px;'>RECOMPENSA: {MODOS[m_sel]['cups']}🏆</p></div>", unsafe_allow_html=True)
+    
+    st.write("---")
+    if st.button("¡BUSCAR PARTIDA! 🥊", use_container_width=True):
+        st.session_state.selected_modo = m_sel
+        st.session_state.phase = 'matchmaking'
+        st.rerun()
+    if st.button("VOLVER AL INICIO"):
+        st.session_state.phase = 'idle'
+        st.rerun()
+    st.stop()
+
+# --- MATCHMAKING 3VS3 CON ICONOS ---
+if st.session_state.phase == 'matchmaking':
+    st.markdown(f"<h1 style='text-align:center;'>{st.session_state.selected_modo}</h1>", unsafe_allow_html=True)
+    c1, cvs, c2 = st.columns([2,1,2])
+    with c1:
+        st.markdown(f"<div class='pin-card'><img src='{BRAWLERS[st.session_state.selected_brawler]['img']}' class='pin-img'><br><b style='font-size:20px;'>{st.session_state.player_name}</b></div>", unsafe_allow_html=True)
+        for _ in range(2):
+            bot_b = random.choice(list(BRAWLERS.keys()))
+            st.markdown(f"<div class='pin-card'><img src='{BRAWLERS[bot_b]['img']}' class='pin-img'><br>{random.choice(BOT_NAMES)}</div>", unsafe_allow_html=True)
+    with cvs: st.markdown("<p class='vs-txt'>VS</p>", unsafe_allow_html=True)
+    with c2:
+        for _ in range(3):
+            bot_b = random.choice(list(BRAWLERS.keys()))
+            st.markdown(f"<div class='pin-card'><img src='{BRAWLERS[bot_b]['img']}' class='pin-img'><br>{random.choice(BOT_NAMES)}</div>", unsafe_allow_html=True)
+    
+    time.sleep(2.5)
+    if st.button("¡ENTRAR A LA ARENA!"):
+        win = random.random() < 0.55
+        m = MODOS[st.session_state.selected_modo]
+        b = st.session_state.selected_brawler
+        if win:
+            st.session_state.my_brawlers[b] += m['cups']
+            st.session_state.coins += int(45 * m['mult'])
+            st.session_state.last_match = {"win":True, "cups":m['cups'], "coins":int(45*m['mult']), "brawler":b}
+        else:
+            lost = -4 if st.session_state.my_brawlers[b] > 10 else 0
+            st.session_state.my_brawlers[b] += lost
+            st.session_state.last_match = {"win":False, "cups":lost, "coins":0, "brawler":b}
+        save_player_data()
+        st.session_state.phase = 'result'
+        st.rerun()
+    st.stop()
+
+# --- PANTALLA FINAL (RESULTADOS) ---
+if st.session_state.phase == 'result':
+    res = st.session_state.last_match
+    st.markdown(f"<div style='text-align:center;'><img src='{BRAWLERS[res['brawler']]['img']}' style='width:220px;'></div>", unsafe_allow_html=True)
+    if res['win']:
+        st.markdown(f"<h1 style='text-align:center; color:#2ecc71; font-size:80px;'>VICTORIA</h1>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='text-align:center;'>+{res['cups']} 🏆 | +{res['coins']} 💰</h2>", unsafe_allow_html=True)
+    else:
+        st.markdown(f"<h1 style='text-align:center; color:#e74c3c; font-size:80px;'>DERROTA</h1>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='text-align:center;'>{res['cups']} 🏆</h2>", unsafe_allow_html=True)
+    
+    if st.button("VOLVER AL MENÚ PRINCIPAL", use_container_width=True):
+        st.session_state.phase = 'idle'
+        st.rerun()
+    st.stop()
+
+# --- TIENDA ---
+if st.session_state.phase == 'tienda':
+    st.header("🛒 TIENDA ESTELAR")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("<div class='pin-card'><h3>📦 CAJA BRAWL</h3><p>100 💰</p></div>", unsafe_allow_html=True)
+        if st.button("ABRIR CAJA"):
+            if st.session_state.coins >= 100:
+                st.session_state.coins -= 100
+                if random.random() < 0.20:
+                    disponibles = [b for b in BRAWLERS.keys() if b not in st.session_state.my_brawlers]
+                    if disponibles:
+                        new = random.choice(disponibles)
+                        st.session_state.my_brawlers[new] = 0
+                        st.balloons(); st.success(f"¡NUEVO BRAWLER: {new}!")
+                save_player_data(); st.rerun()
+    if st.button("CERRAR TIENDA"):
+        st.session_state.phase = 'idle'
+        st.rerun()
     st.stop()
 
 # ==========================================
-# 6. PANTALLA EXCLUSIVA DE RESULTADO DE BATALLA
+# 5. MENÚ PRINCIPAL (HUD Y COLECCIÓN)
 # ==========================================
-# Si la fase es 'battle_result', ocultamos todo el menú normal y mostramos solo esto
-if st.session_state.phase == 'battle_result':
-    res = st.session_state.last_match
-    
-    st.markdown(f"<div class='emoji-giant'>{BRAWLERS[res['brawler']]['emoji']}</div>", unsafe_allow_html=True)
-    
-    if res['win']:
-        st.markdown("<p class='win-text'>¡VICTORIA!</p>", unsafe_allow_html=True)
-        st.markdown(f"<h2 style='text-align:center;'>+{res['cups']} 🏆 | +{res['coins']} 💰</h2>", unsafe_allow_html=True)
-    else:
-        st.markdown("<p class='lose-text'>SUERTE LA PRÓXIMA</p>", unsafe_allow_html=True)
-        st.markdown(f"<h2 style='text-align:center;'>{res['cups']} 🏆</h2>", unsafe_allow_html=True)
-    
-    st.write("---")
-    colA, colB, colC = st.columns([1,2,1])
-    with colB:
-        if st.button("VOLVER A JUGAR 🔄"):
-            # Devolvemos a la fase normal en la pestaña de Batalla
-            st.session_state.phase = 'idle' 
-            st.rerun()
-            
-    st.stop() # Esto evita que se dibuje el menú de abajo mientras estamos en esta pantalla
+st.markdown(f"""
+    <div class='hud-bar'>
+        <div class='hud-val'>👤 {st.session_state.player_name}</div>
+        <div class='hud-val'>💰 {st.session_state.coins}</div>
+        <div class='hud-val'>💎 {st.session_state.gems}</div>
+        <div class='hud-val'>🏆 {sum(st.session_state.my_brawlers.values())}</div>
+    </div>
+""", unsafe_allow_html=True)
 
-# ==========================================
-# 7. EL JUEGO NORMAL (MENÚ Y DASHBOARD)
-# ==========================================
-st.sidebar.title(f"👤 {st.session_state.player_name}")
-# Guardamos en qué pestaña estamos para que al "Volver a jugar" te deje en Batalla
-if 'current_menu' not in st.session_state:
-    st.session_state.current_menu = "INICIO"
-
-menu = st.sidebar.radio("MENÚ", ["INICIO", "TIENDA", "BATALLA"], index=["INICIO", "TIENDA", "BATALLA"].index(st.session_state.current_menu))
-st.session_state.current_menu = menu
-
-if st.sidebar.button("CERRAR SESIÓN 🚪"):
-    save_player_data()
-    del st.session_state['player_name']
-    st.rerun()
-
-c1, c2, c3 = st.columns(3)
-c1.markdown(f"<div class='stat-card'>💰 {st.session_state.coins}</div>", unsafe_allow_html=True)
-c2.markdown(f"<div class='stat-card'>💎 {st.session_state.gems}</div>", unsafe_allow_html=True)
-c3.markdown(f"<div class='stat-card'>🏆 {sum(st.session_state.my_brawlers.values())}</div>", unsafe_allow_html=True)
-st.divider()
-
-if menu == "INICIO":
-    st.header("TUS BRAWLERS")
-    cols = st.columns(3)
-    for i, (name, trophies) in enumerate(st.session_state.my_brawlers.items()):
-        with cols[i % 3]:
-            st.markdown(f"<div class='emoji-safe'>{BRAWLERS[name]['emoji']}</div>", unsafe_allow_html=True)
-            st.markdown(f"<h3 style='text-align:center;'>{name}</h3>", unsafe_allow_html=True)
-            st.markdown(f"<p style='text-align:center;'>🏆 {trophies}</p>", unsafe_allow_html=True)
-
-elif menu == "TIENDA":
-    st.header("CAJAS")
-    t1, t2 = st.columns(2)
-    with t1:
-        st.markdown("<div class='emoji-safe'>🟦</div>", unsafe_allow_html=True)
-        if st.button("CAJA BRAWL (100 💰)"):
-            if st.session_state.coins >= 100:
-                st.session_state.coins -= 100
-                st.session_state.reward = random.random() < 0.20
-                st.session_state.items = 3 if st.session_state.reward else 2
-                st.session_state.phase = 'opening'
-                save_player_data()
-                st.rerun()
-    with t2:
-        st.markdown("<div class='emoji-safe'>🧰</div>", unsafe_allow_html=True)
-        if st.button("MEGACAJA (80 💎)"):
-            if st.session_state.gems >= 80:
-                st.session_state.gems -= 80
-                st.session_state.reward = random.random() < 0.40
-                st.session_state.items = 6 if st.session_state.reward else 5
-                st.session_state.phase = 'opening'
-                save_player_data()
-                st.rerun()
-
-    if st.session_state.phase == 'opening':
-        st.write("---")
-        items_actuales = int(st.session_state.get('items', 0))
-        st.markdown(f"<div class='emoji-safe'>{items_actuales}</div>", unsafe_allow_html=True)
-        
-        if st.button("PULSAR PANTALLA 🔓"):
-            if items_actuales > 1:
-                st.session_state.items = items_actuales - 1
-                st.session_state.coins += random.randint(10, 40)
-                st.rerun()
-            else:
-                if st.session_state.reward:
-                    unlockable = [b for b in BRAWLERS.keys() if b not in st.session_state.my_brawlers]
-                    if unlockable:
-                        new_b = random.choice(unlockable)
-                        st.session_state.my_brawlers[new_b] = 0
-                        st.success(f"¡NUEVO BRAWLER: {new_b}!")
-                    else: 
-                        st.info("BRAWLER REPETIDO: +200 💰"); st.session_state.coins += 200
-                else:
-                    st.warning("SOLO RECURSOS...")
-                st.session_state.phase = 'idle'
-                save_player_data()
-                time.sleep(1.5); st.rerun()
-
-elif menu == "BATALLA":
-    st.header("COMBATE")
-    sel = st.selectbox("ELEGIR BRAWLER:", list(st.session_state.my_brawlers.keys()))
-    st.markdown(f"<div class='emoji-safe'>{BRAWLERS[sel]['emoji']}</div>", unsafe_allow_html=True)
-    
-    if st.button("¡BUSCAR PARTIDA! 🥊"):
-        with st.spinner("Luchando en la arena..."): 
-            time.sleep(1.5)
-        
-        win = random.random() < 0.55
-        if win:
-            cups_won = 8
-            coins_won = random.randint(25, 55)
-            st.session_state.my_brawlers[sel] += cups_won
-            st.session_state.coins += coins_won
-            # Guardamos los datos de la partida para mostrarlos en la nueva pantalla
-            st.session_state.last_match = {"win": True, "brawler": sel, "cups": cups_won, "coins": coins_won}
-        else:
-            cups_lost = -4 if st.session_state.my_brawlers[sel] > 0 else 0
-            st.session_state.my_brawlers[sel] = max(0, st.session_state.my_brawlers[sel] + cups_lost)
-            st.session_state.last_match = {"win": False, "brawler": sel, "cups": cups_lost, "coins": 0}
-        
-        save_player_data()
-        
-        # Activamos la pantalla exclusiva de resultados
-        st.session_state.phase = 'battle_result'
+col_t, col_b = st.columns(2)
+with col_t:
+    st.markdown("<div class='nav-btn btn-tienda'>", unsafe_allow_html=True)
+    if st.button("🛒 TIENDA", use_container_width=True):
+        st.session_state.phase = 'tienda'
         st.rerun()
+    st.markdown("</div>", unsafe_allow_html=True)
+
+with col_b:
+    st.markdown("<div class='nav-btn btn-batalla'>", unsafe_allow_html=True)
+    if st.button("⚔️ BATALLA", use_container_width=True):
+        st.session_state.phase = 'battle_select'
+        st.rerun()
+    st.markdown("</div>", unsafe_allow_html=True)
+
+st.divider()
+st.subheader("👤 TU COLECCIÓN")
+cols = st.columns(4)
+for i, (name, cups) in enumerate(st.session_state.my_brawlers.items()):
+    with cols[i % 4]:
+        st.markdown(f"""
+            <div class='pin-card'>
+                <img src='{BRAWLERS[name]['img']}' class='pin-img'>
+                <p><b>{name}</b><br>🏆 {cups}</p>
+            </div>
+        """, unsafe_allow_html=True)
